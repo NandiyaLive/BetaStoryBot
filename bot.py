@@ -25,31 +25,38 @@ def stories(update, context):
     query = update.message.text.replace("/stories ", "")
 
     url = f"https://www.insta-stories.com/en/stories/{query}"
-
     r = requests.get(url).text
 
     soup = bs(r, "lxml")
 
-    if soup.find("div", class_="msg msg-no-stories"):
+    if soup.find("div", class_="msg msg-user-not-found"):
         update.message.reply_text(
-            "No stories available. Please try again later.")
+            "This username doesn't exist. Please try with another one.")
+
     else:
-        try:
-            for stories in soup:
-                stories = soup.find("a", class_="download-story")
-
-                file_url_x = stories["onclick"].replace(
-                    "window.download('", "")
-
-                file_url = file_url_x.replace("'); return false;", "")
-
-                context.bot.send_document(
-                    chat_id=update.message.chat_id, document=file_url)
-
-        except:
+        if soup.find("div", class_="msg msg-no-stories"):
             update.message.reply_text(
-                "Something went wrong. Please try again later.")
+                "No stories available. Please try again later.")
 
+        else:
+            try:
+                profile = soup.find(
+                    "div", class_="user-name").text.replace("\n", "")
+                update.message.reply_text(f"Downloading stories by {profile}")
+                for items in soup:
+                    image = soup.find("img", class_="story-image")
+                    img_url = image["src"]
+                    video = soup.find("video", class_="story-video")
+                    vid_url = video["src"]
+
+                context.bot.send_video(
+                    chat_id=update.message.chat_id, video=vid_url)
+                context.bot.send_photo(
+                    chat_id=update.message.chat_id, photo=img_url)
+
+            except:
+                update.message.reply_text(
+                    "Something went wrong. Please try again later.")
 
 def echo(update, context):
     update.message.reply_text('read /help')
