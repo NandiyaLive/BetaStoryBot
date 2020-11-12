@@ -6,8 +6,6 @@ import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, run_async
 import requests
 from bs4 import BeautifulSoup as bs
-import wget
-import os
 
 
 def start(update, context):
